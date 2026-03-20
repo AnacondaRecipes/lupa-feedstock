@@ -10,27 +10,24 @@ source:
   sha256: 9a770a6e89576be3447668d7ced312cd6fd41d3c13c2462c9dc2c2ab570e45d9
 
 build:
-  script: {{ PYTHON }} -m pip install . -vv --no-build-isolation
-  number: 1
+  script_env:
+    - LUPA_NO_LUAJIT=true
+  script: {{ PYTHON }} -m pip install . -vv --no-build-isolation --no-deps
+  number: 0
 
 requirements:
   build:
-    - python                                 # [build_platform != target_platform]
-    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - cython                                 # [build_platform != target_platform]
     - cmake
-    - make
+    - make  # [unix]
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - gcc  # [linux]
   host:
     - python
     - cython
     - pip
     - setuptools
     - lua
-    - luajit
   run:
     - python
 
@@ -45,8 +42,15 @@ test:
 about:
   home: https://github.com/scoder/lupa
   summary: Python wrapper around Lua and LuaJIT
+  description: |
+    Lupa integrates the runtimes of Lua or LuaJIT2 into CPython. 
+    It is a partial rewrite of LunaticPython in Cython with some
+    additional features such as proper coroutine support.
   license: MIT
+  license_family: MIT
   license_file: LICENSE.txt
+  dev_url: https://github.com/scoder/lupa
+  doc_url: https://github.com/scoder/lupa/blob/master/README.rst
 
 extra:
   recipe-maintainers:
