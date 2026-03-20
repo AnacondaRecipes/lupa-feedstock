@@ -10,7 +10,7 @@ source:
   sha256: 9a770a6e89576be3447668d7ced312cd6fd41d3c13c2462c9dc2c2ab570e45d9
 
 build:
-  script: {{ PYTHON }} -m pip install . -vv --no-build-isolation --no-deps
+  script: LUPA_NO_LUAJIT=true {{ PYTHON }} -m pip install . -vv --no-build-isolation --no-deps
   number: 0
 
 requirements:
