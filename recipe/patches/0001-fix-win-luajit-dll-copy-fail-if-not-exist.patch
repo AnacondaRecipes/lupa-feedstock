@@ -1,0 +1,63 @@
+From ec2e1c868c980b118e42e8689d09358870085358 Mon Sep 17 00:00:00 2001
+From: "Viacheslav Ch." <vchychyrko@anaconda.com>
+Date: Wed, 8 Apr 2026 15:17:58 +0300
+Subject: [PATCH] fix-win-luajit-dll-copy-fail-if-not-exist
+
+---
+ setup.py | 32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/setup.py b/setup.py
+index d47d023..92f7f2b 100644
+--- a/setup.py
++++ b/setup.py
+@@ -60,13 +60,17 @@ def cmd_output(command):
+     env = os.environ.copy()
+     env['LANG'] = ''
+     import subprocess
+-    proc = subprocess.Popen(command,
+-                            shell=True,
+-                            stdout=subprocess.PIPE,
+-                            stderr=subprocess.PIPE,
+-                            env=env)
+-    stdout, stderr = proc.communicate()
+-    exit_code = proc.wait()
++
++    try:
++        proc = subprocess.Popen(command,
++                                shell=True,
++                                stdout=subprocess.PIPE,
++                                stderr=subprocess.PIPE,
++                                env=env)
++        stdout, stderr = proc.communicate()
++        exit_code = proc.wait()
++    except OSError as e:
++        raise PkgConfigError(str(e))
+     if exit_code != 0:
+         raise PkgConfigError(stderr.decode('ISO8859-1'))
+     return stdout
+@@ -440,10 +444,18 @@ write_file(os.path.join(basedir, 'lupa', 'version.py'), u"__version__ = '%s'\n"
+ dll_files = []
+ for config in configs:
+     if config.get('libfile'):
+-        # include Lua DLL in the lib folder if we are on Windows
+         dll_file = os.path.splitext(config['libfile'])[0] + ".dll"
+-        shutil.copy(dll_file, os.path.join(basedir, 'lupa'))
+-        dll_files.append(os.path.basename(dll_file))
++        # When linking against an external Lua/LuaJIT import library on Windows,
++        # the DLL may not live next to the .lib file (e.g. in conda-build).
++        # Only copy it when it is actually present.
++        if os.path.exists(dll_file):
++            shutil.copy(dll_file, os.path.join(basedir, 'lupa'))
++            dll_files.append(os.path.basename(dll_file))
++        else:
++            print("DLL file not found next to import library, skipping copy: %s" % dll_file)
++ 
++        
++        
+ 
+ if dll_files:
+     extra_setup_args['package_data'] = {'lupa': dll_files}
+-- 
+2.50.1 (Apple Git-155)
+
