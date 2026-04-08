@@ -9,33 +9,44 @@ source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/lupa-{{ version }}.tar.gz
   sha256: 9a770a6e89576be3447668d7ced312cd6fd41d3c13c2462c9dc2c2ab570e45d9
 
+  patches:
+    - patches/0001-fix-win-luajit-dll-copy-fail-if-not-exist.patch      # [win]
+
 build:
+  number: 1
+  skip: true  # [py<38]
+
+  # Unvendor bundled Lua/LuaJIT sources: force setup.py to use external
+  # dependencies from the build environment instead of vendored third-party code.
   script_env:
-    - LUPA_NO_LUAJIT=true
-  script: {{ PYTHON }} -m pip install . -vv --no-build-isolation --no-deps
-  number: 0
+    - LUPA_NO_BUNDLE=true
 
 requirements:
   build:
-    - cmake
-    - make  # [unix]
+    - pkg-config              # [unix]
+    - make                    # [unix]
     - {{ stdlib('c') }}
     - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
   host:
-    - python
-    - cython
-    - pip
+    - cython >=3.1.6
     - setuptools
-    - lua
+    - wheel
+    - python
+    - pip
+    # Build only against external LuaJIT.
+    # The recipe does not target plain Lua, so only luajit is needed in host.
+    - luajit
   run:
     - python
 
 test:
   imports:
     - lupa
+    - lupa.version
   commands:
     - pip check
+    - python -c "import lupa; lua=lupa.LuaRuntime(); assert lua.eval('1+1') == 2"
+    - python -c "import lupa; assert lupa.LuaRuntime().lua_implementation"
   requires:
     - pip
 
