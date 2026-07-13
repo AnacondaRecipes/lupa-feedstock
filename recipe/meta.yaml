@@ -9,6 +9,9 @@ source:
   url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: d8022641b9ec8ecf2c5ecbe9f47e5a70e0b87c4b5ae921b92cb02a638e0acd08
 
+  patches:
+    - patches/0001-fix-win-luajit-dll-copy-fail-if-not-exist.patch      # [win]
+
 build:
   number: 0
   skip: true  # [py<38]
