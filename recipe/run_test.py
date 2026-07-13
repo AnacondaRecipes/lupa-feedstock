@@ -6,7 +6,7 @@ import lupa
 class TestLupaSmoke(unittest.TestCase):
     def test_import_and_version(self):
         self.assertTrue(hasattr(lupa, "__version__"))
-        self.assertEqual(lupa.__version__, "2.6")
+        self.assertEqual(lupa.__version__, "2.8")
 
     def test_runtime_creation(self):
         lua = lupa.LuaRuntime()
