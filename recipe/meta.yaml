@@ -41,6 +41,10 @@ requirements:
     - lua 5.5.*  # [win and arm64]
   run:
     - python
+    # luajit carries run_exports and propagates itself into run: automatically.
+    # Plain lua does not define run_exports, so win-arm64 needs it listed explicitly
+    # to avoid an overlinking error (the compiled extension links against lua.dll).
+    - lua 5.5.*  # [win and arm64]
 
 test:
   imports:
