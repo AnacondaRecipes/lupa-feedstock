@@ -13,7 +13,7 @@ source:
     - patches/0001-fix-win-luajit-dll-copy-fail-if-not-exist.patch      # [win]
 
 build:
-  number: 0
+  number: 1
   skip: true  # [py<38]
 
   # Unvendor bundled Lua/LuaJIT sources: force setup.py to use external
@@ -33,11 +33,18 @@ requirements:
     - wheel
     - python
     - pip
-    # Build only against external LuaJIT.
-    # The recipe does not target plain Lua, so only luajit is needed in host.
-    - luajit
+    # Build against external LuaJIT on most platforms. LuaJIT has no official
+    # MSVC/ARM64 port (its ARM64 support relies on clang/GCC, not MSVC), so
+    # win-arm64 builds against plain Lua instead; lupa has supported Lua 5.4+
+    # natively since 1.10, and 5.5 is the version available on win-arm64 main.
+    - luajit  # [not (win and arm64)]
+    - lua 5.5.*  # [win and arm64]
   run:
     - python
+    # luajit carries run_exports and propagates itself into run: automatically.
+    # Plain lua does not define run_exports, so win-arm64 needs it listed explicitly
+    # to avoid an overlinking error (the compiled extension links against lua.dll).
+    - lua 5.5.*  # [win and arm64]
 
 test:
   imports:
